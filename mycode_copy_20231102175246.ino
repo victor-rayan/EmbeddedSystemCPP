@@ -4,12 +4,14 @@
 #include <ESPAsyncWebSrv.h>
 #include "WiFiConfig.h"
 #include "memoryFlash.h"
+#include "mqtt.h"
 
 
 void setup() {
   initMemory();
   Serial.begin(115200);
   setupWebServer();
+  setupMqtt();
 
 }
 
@@ -28,12 +30,14 @@ void loop() {
   bool hasConnectedToWiFi = loadConnectionStatus();
   Serial.println(hasConnectedToWiFi);
 
-  delay(8000);
-
+  
   if (hasConnectedToWiFi && WiFi.status() != WL_CONNECTED ) {
     // WiFi não está conectado, tente reconectar
     setupWiFi();
+    verifyMqttConnection();
   } else if (hasConnectedToWiFi && WiFi.status() == WL_CONNECTED) {
+    verifyMqttConnection();
+    sendMessageTest();  
     Serial.println("Lendo sensores");
     Serial.println("Enviando dados dos sensores");
   } else{
@@ -41,6 +45,6 @@ void loop() {
     
   }
 
-  delay(5000);
-  
+  delay(3000);
+
 }
