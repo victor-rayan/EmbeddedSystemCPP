@@ -9,7 +9,6 @@ extern AsyncWebServer server;
 void setupWebServer();
 bool connectToWiFi(const String& ssid, const String& password);
 void notFound(AsyncWebServerRequest *request);
-void returnMessageWhenConnected();
-
+void setupWiFi();
 
 #endif

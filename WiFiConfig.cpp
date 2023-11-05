@@ -4,6 +4,7 @@
 #include <AsyncTCP.h>
 #include <ESPAsyncWebSrv.h>
 #include "UniqueID.h"
+#include "memoryFlash.h"
 
 AsyncWebServer server(80);
 
@@ -78,12 +79,15 @@ void notFound(AsyncWebServerRequest *request) {
   request->send(404, "text/plain", "Not found");
 }
 
-void returnMessageWhenConnected(){
-    String id = getUniqueID();
-    String response = String(success_html);
-    response.replace("%s", id);
-    request->send(200, "text/html", response);
+void setupWiFi() {
+  String ssid = readStringEEPROM(EEPROM_SSID);
+  String password = readStringEEPROM(EEPROM_PASS);
+
+  if (ssid.length() > 0 && password.length() > 0) {
+    bool isConnectedToWiFi = connectToWiFi(ssid, password);
+  }
 }
+
 
 bool connectToWiFi(const String& ssid, const String& password) {
   WiFi.disconnect();
@@ -129,10 +133,13 @@ void setupWebServer() {
 
     // Tentar conectar a ESP32 à rede WiFi
     if (connectToWiFi(input_ssid, input_password)) {
-      String id = getUniqueID();
-      String response = String(success_html);
-      response.replace("%s", id);
-      request->send(200, "text/html", response);
+        String id = getUniqueID();
+        String response = String(success_html);
+        writeStringEEPROM(EEPROM_SSID, input_ssid);
+        writeStringEEPROM(EEPROM_PASS, input_password);
+        saveConnectionStatus(true);
+        response.replace("%s", id);
+        request->send(200, "text/html", response);
     } else {
       request->send(200, "text/html", "Falha ao conectar à rede WiFi: " + input_ssid);
     }
