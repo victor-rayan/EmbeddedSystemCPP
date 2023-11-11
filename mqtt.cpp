@@ -90,7 +90,6 @@ void callback(char* topic, byte* message, unsigned int length) {
 
     String id = getUniqueID();
 
-    // Substitua "1233455" por "id" nas condições
     if (String(topic) == "irrigaja/" + id + "/commands/waterPump") {
       Serial.print("Changing output to ");
       if (messageTemp == "on") {

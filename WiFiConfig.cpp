@@ -107,7 +107,7 @@ bool connectToWiFi(const String& ssid, const String& password) {
 void setupWebServer() {
   Serial.begin(115200);
 
-  // Configure a rede WiFi como ponto de acesso (AP)
+  // Configura a rede WiFi como ponto de acesso (AP)
   WiFi.softAP(ap_ssid, ap_password);
 
   // Obtenha o endereço IP do ponto de acesso

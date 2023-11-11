@@ -3,9 +3,8 @@
 #include <WiFi.h>
 
 String getUniqueID() {
-  static String uniqueID; // Variável estática para armazenar o ID único
+  static String uniqueID;
 
-  // Se o ID único ainda não foi gerado, gere-o
   if (uniqueID.isEmpty()) {
     uint8_t mac[6];
     WiFi.macAddress(mac);
