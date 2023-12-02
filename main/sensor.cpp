@@ -1,5 +1,7 @@
 #include "DHT.h"
 #include "mqtt.h"
+#include "memoryFlash.h"
+#include "bomba.h"
 
 #define DHTPIN 4
 #define DHTTYPE DHT22
@@ -36,18 +38,27 @@ void setupSensor() {
   dht.begin();
 }
 
-void verifySensor() {
-  
-  reservatorio = digitalRead(nivel); //verifica se há água no reservatório
+bool reservatorioVazio() {
+  reservatorio = digitalRead(nivel);
   if (reservatorio == HIGH) {
-    digitalWrite(alerta, HIGH); //caso o sensor de nível for acionado, será ligado um led de aviso
+    digitalWrite(alerta, HIGH);
     Serial.print("Nível do reservatório: vazio");
     Serial.print('\n');
+    return true;
   }else{
-    digitalWrite(alerta, LOW); //caso o sensor de nível não for acionado, led de aviso se mantêm desligado
+    digitalWrite(alerta, LOW);
     Serial.print("Nível do reservatório: cheio");
     Serial.print('\n');
-  }//end else
+    return false;
+  }
+}
+
+void verifySensor() {
+  
+  reservatorio = reservatorioVazio();
+  if (reservatorio == true) {
+    closeBomba();
+  }
 
   umidadear = dht.readHumidity(); //Lê o nível de umidade do ar
   temperatura = dht.readTemperature(); //Lê a temperatura
@@ -73,9 +84,9 @@ void verifySensor() {
   Serial.print(umidade_solo2);
   Serial.print('\n');
   float windSpeed = 5.0;
-  bool status = true;
+  bool status = loadBombaStatus();
 
-  sendMessageInfo(windSpeed, umidadear, umidade_solo1, temperatura, status, reservatorio );
+  sendMessageInfo(windSpeed, umidadear, umidade_solo1, temperatura, status, reservatorio);
 
 
 }

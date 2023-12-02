@@ -6,10 +6,7 @@ const int EEPROM_SIZE = 512;
 const int EEPROM_SSID = 0;
 const int EEPROM_PASS = 100;
 const int EEPROM_STATUS = 300;
-const int EEPROM_TEMP_MAX = 400;
-const int EEPROM_TEMP_MIN = 404;
-const int EEPROM_HUMIDITY_MAX = 408;
-const int EEPROM_HUMIDITY_MIN = 412;
+const int EEPROM_BOMBA_STATUS = 400;
 const int MAX_EEPROM_LEN = 50;
 
 
@@ -62,56 +59,17 @@ bool loadConnectionStatus() {
   return status;
 }
 
+void saveBombaStatus(bool status) {
+  EEPROM.put(EEPROM_BOMBA_STATUS, status);
+  EEPROM.commit();
+}
+
+bool loadBombaStatus() {
+  bool status;
+  EEPROM.get(EEPROM_BOMBA_STATUS, status);
+  return status;
+}
+
 void initMemory() {
   EEPROM.begin(EEPROM_SIZE);
 }
-
-// void setup() {
-//   Serial.begin(115200);
-//   EEPROM.begin(EEPROM_SIZE);
-
-//   // Salvar as credenciais
-//   writeStringEEPROM(EEPROM_SSID, "your_ssid!123245");
-//   writeStringEEPROM(EEPROM_PASS, "your_password@435#@#@#@");
-
-//   // Salvar o status de conexão
-//   saveConnectionStatus(true);
-
-//   // Salvar os valores de temperatura e umidade
-//   writeFloatEEPROM(EEPROM_TEMP_MAX, 30.5);
-//   writeFloatEEPROM(EEPROM_TEMP_MIN, 20.5);
-//   writeFloatEEPROM(EEPROM_HUMIDITY_MAX, 70.0);
-//   writeFloatEEPROM(EEPROM_HUMIDITY_MIN, 40.0);
-
-//   // Ler as credenciais
-//   String ssid = readStringEEPROM(EEPROM_SSID);
-//   String password = readStringEEPROM(EEPROM_PASS);
-
-//   // Ler o status de conexão
-//   int connectionStatus = loadConnectionStatus();
-
-//   // Ler os valores de temperatura e umidade
-//   float tempMax = readFloatEEPROM(EEPROM_TEMP_MAX);
-//   float tempMin = readFloatEEPROM(EEPROM_TEMP_MIN);
-//   float humidityMax = readFloatEEPROM(EEPROM_HUMIDITY_MAX);
-//   float humidityMin = readFloatEEPROM(EEPROM_HUMIDITY_MIN);
-
-//   Serial.print("SSID: ");
-//   Serial.println(ssid);
-//   Serial.print("Password: ");
-//   Serial.println(password);
-//   Serial.print("Status de conexão: ");
-//   Serial.println(connectionStatus);
-//   Serial.print("Temperatura Máxima: ");
-//   Serial.println(tempMax);
-//   Serial.print("Temperatura Mínima: ");
-//   Serial.println(tempMin);
-//   Serial.print("Umidade Máxima: ");
-//   Serial.println(humidityMax);
-//   Serial.print("Umidade Mínima: ");
-//   Serial.println(humidityMin);
-// }
-
-// void loop() {
-//   // Seu código de loop aqui
-// }

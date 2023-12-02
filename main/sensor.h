@@ -9,5 +9,6 @@ extern DHT dht;
 
 void setupSensor();
 void verifySensor();
+bool reservatorioVazio();
 
 #endif
