@@ -132,16 +132,20 @@ void setupWebServer() {
     }
 
     // Tentar conectar a ESP32 à rede WiFi
-    if (connectToWiFi(input_ssid, input_password)) {
-        String id = getUniqueID();
-        String response = String(success_html);
-        writeStringEEPROM(EEPROM_SSID, input_ssid);
-        writeStringEEPROM(EEPROM_PASS, input_password);
-        saveConnectionStatus(true);
-        response.replace("%s", id);
-        request->send(200, "text/html", response);
-    } else {
-      request->send(200, "text/html", "Falha ao conectar à rede WiFi: " + input_ssid);
+    try {
+        if (connectToWiFi(input_ssid, input_password)) {
+            String id = getUniqueID();
+            String response = String(success_html);
+            writeStringEEPROM(EEPROM_SSID, input_ssid);
+            writeStringEEPROM(EEPROM_PASS, input_password);
+            saveConnectionStatus(true);
+            response.replace("%s", id);
+            request->send(200, "text/html", response);
+        } else {
+            request->send(200, "text/html", "Falha ao conectar à rede WiFi: " + input_ssid);
+        }
+    } catch (...) {
+        request->send(200, "text/html", "Falha ao conectar à rede WiFi: ");
     }
 
   });
