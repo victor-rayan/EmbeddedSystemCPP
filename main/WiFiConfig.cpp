@@ -117,20 +117,13 @@ bool connectToWiFi(const String &ssid, const String &password)
   Serial.println(ssid);
   Serial.println(password);
 
-  Serial.println("Tentando conectar à rede WiFi status befora");
-  Serial.println(WiFi.status());
-
   WiFi.disconnect(true);
   WiFi.setAutoReconnect(false);
   delay(500);
-  Serial.println("Tentando conectar à rede WiFi status afetr disconnect");
-  Serial.println(WiFi.status());
-
+ 
   WiFi.begin(ssid.c_str(), password.c_str());
   WiFi.setAutoReconnect(false);
 
-  Serial.println("status depois do begin");
-  Serial.println(WiFi.status());
   int timeout = 10;
   while (timeout > 0)
   {
@@ -140,19 +133,13 @@ bool connectToWiFi(const String &ssid, const String &password)
     }
     else if ((WiFi.status() == WL_NO_SSID_AVAIL) && timeout <= 7 || WiFi.status() == WL_CONNECT_FAILED)
     {
-      Serial.println("status no ifelse");
-      Serial.println(WiFi.status());
       return false;
     }
-    Serial.println("esperando");
+    
     delay(1000);
     timeout--;
-    Serial.println("status saida e tiemout");
-    Serial.println(WiFi.status());
-    Serial.println(timeout);
   }
-  Serial.println("timeout");
-  Serial.println(WiFi.status());
+
   return false;
 }
 
@@ -191,25 +178,27 @@ void setupWebServer()
                 input_password = request->getParam(input_parameter2)->value();
               }
 
-              
-              // Tentar conectar a ESP32 à rede WiFi
-              if (connectToWiFi(input_ssid, input_password))
-              {
+              if(xSemaphoreTake(wifiSemaphore, (TickType_t) 10) == pdTRUE){
+                   // Tentar conectar a ESP32 à rede WiFi
+                  if (connectToWiFi(input_ssid, input_password))
+                  {
 
-                String id = getUniqueID();
-                String response = String(success_html);
+                    String id = getUniqueID();
+                    String response = String(success_html);
 
-                writeStringEEPROM(EEPROM_SSID, input_ssid);
-                writeStringEEPROM(EEPROM_PASS, input_password);
-                saveConnectionStatus(true);
-                response.replace("%s", id);
+                    writeStringEEPROM(EEPROM_SSID, input_ssid);
+                    writeStringEEPROM(EEPROM_PASS, input_password);
+                    saveConnectionStatus(true);
+                    response.replace("%s", id);
 
-                request->send(200, "text/html", response);
-              }
-              else
-              {
-                Serial.print("Iaqqqaqaqqqqqqqqqqqqq abcd");
-                request->send_P(200, "text/html", fail_html);
+                    request->send(200, "text/html", response);
+                  }
+                  else
+                  {
+                    Serial.print("Iaqqqaqaqqqqqqqqqqqqq abcd");
+                    request->send_P(200, "text/html", fail_html);
+                  }
+              xSemaphoreGive(wifiSemaphore);
               }
             });
 

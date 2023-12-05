@@ -6,6 +6,7 @@
 #include "UniqueID.h"
 
 extern AsyncWebServer server;
+extern SemaphoreHandle_t wifiSemaphore;
 void setupWebServer();
 bool connectToWiFi(const String& ssid, const String& password);
 void notFound(AsyncWebServerRequest *request);
