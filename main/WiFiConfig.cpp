@@ -7,12 +7,13 @@
 #include "memoryFlash.h"
 
 AsyncWebServer server(80);
+SemaphoreHandle_t wifiSemaphore;
 
-const char* ap_ssid = "ESP32-AP";
-const char* ap_password = "password";
+const char *ap_ssid = "ESP32-AP";
+const char *ap_password = "password";
 
-const char* input_parameter1 = "input_ssid";
-const char* input_parameter2 = "input_password";
+const char *input_parameter1 = "input_ssid";
+const char *input_parameter2 = "input_password";
 
 const char index_html[] PROGMEM = R"rawliteral(
 <!DOCTYPE html>
@@ -57,7 +58,7 @@ const char success_html[] PROGMEM = R"rawliteral(
     </style>
     </head><body>
     <h2>Configuração Concluída</h2>
-    <h3>Seu irrigador está quase configurado. Acesse <a href="http://irrigaja.com.br" style="color: #008000;">irrigaja.com.br</a> e utilize seu código:</h3>
+    <h3>Seu irrigador está quase configurado. Acesse <a href="https://irrigaja.netlify.app/" style="color: #008000;">irrigaja.com.br</a> e utilize seu código:</h3>
     <p><strong id="uniqueID">%s</strong></p>
     <button onclick="copyToClipboard()">Copiar Código</button>
   
@@ -75,37 +76,91 @@ const char success_html[] PROGMEM = R"rawliteral(
     </script>
   </body></html>)rawliteral";
 
-void notFound(AsyncWebServerRequest *request) {
+const char fail_html[] PROGMEM = R"rawliteral(
+<!DOCTYPE HTML><html><head>
+    <title>Houve um problema</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+      html {font-family: Times New Roman; display: inline-block; text-align: center;}
+      h2 {font-size: 3.0rem; color: #008000;}
+      button {padding: 10px; font-size: 1.5rem;}
+    </style>
+    </head><body>
+    <h2>Houve um problema!</h2>
+    <h3>SSID ou Senha Wifi incorreta! Acesse <a href="http://192.168.4.1" style="color: #008000;">AQUI</a> e Tente Novamente:</h3>
+  </body></html>)rawliteral";
+
+void notFound(AsyncWebServerRequest *request)
+{
   request->send(404, "text/plain", "Not found");
 }
 
-void setupWiFi() {
+void setupWiFi()
+{
   String ssid = readStringEEPROM(EEPROM_SSID);
   String password = readStringEEPROM(EEPROM_PASS);
 
-  if (ssid.length() > 0 && password.length() > 0) {
+  Serial.println("SSID: ");
+  Serial.println(ssid);
+  Serial.println("Password: ");
+  Serial.println(password);
+
+  if (ssid.length() > 0 && password.length() > 0)
+  {
     bool isConnectedToWiFi = connectToWiFi(ssid, password);
   }
 }
 
+bool connectToWiFi(const String &ssid, const String &password)
+{ 
+  Serial.println(ssid);
+  Serial.println(password);
 
-bool connectToWiFi(const String& ssid, const String& password) {
-  WiFi.disconnect();
+  Serial.println("Tentando conectar à rede WiFi status befora");
+  Serial.println(WiFi.status());
+
+  WiFi.disconnect(true);
+  WiFi.setAutoReconnect(false);
+  delay(500);
+  Serial.println("Tentando conectar à rede WiFi status afetr disconnect");
+  Serial.println(WiFi.status());
+
   WiFi.begin(ssid.c_str(), password.c_str());
+  WiFi.setAutoReconnect(false);
 
-  int timeout = 10; // Tentar se conectar por até 10 segundos
-  while (timeout > 0) {
-    if (WiFi.status() == WL_CONNECTED) {
-      return true; // Conectado com sucesso
+  Serial.println("status depois do begin");
+  Serial.println(WiFi.status());
+  int timeout = 10;
+  while (timeout > 0)
+  {
+    if (WiFi.status() == WL_CONNECTED)
+    {
+      return true;
     }
+    else if ((WiFi.status() == WL_NO_SSID_AVAIL) && timeout <= 7 || WiFi.status() == WL_CONNECT_FAILED)
+    {
+      Serial.println("status no ifelse");
+      Serial.println(WiFi.status());
+      return false;
+    }
+    Serial.println("esperando");
     delay(1000);
     timeout--;
+    Serial.println("status saida e tiemout");
+    Serial.println(WiFi.status());
+    Serial.println(timeout);
   }
-  return false; // Falha na conexão
+  Serial.println("timeout");
+  Serial.println(WiFi.status());
+  return false;
 }
 
-void setupWebServer() {
-  Serial.begin(115200);
+void setupWebServer()
+{
+  wifiSemaphore = xSemaphoreCreateMutex();
+
+  WiFi.mode(WIFI_AP_STA);
 
   // Configura a rede WiFi como ponto de acesso (AP)
   WiFi.softAP(ap_ssid, ap_password);
@@ -115,40 +170,48 @@ void setupWebServer() {
   Serial.print("IP Address: ");
   Serial.println(apIP);
 
-  server.on("/", HTTP_GET, [](AsyncWebServerRequest *request){
-    request->send_P(200, "text/html", index_html);
-  });
+  server.on("/", HTTP_GET, [](AsyncWebServerRequest *request)
+            { request->send_P(200, "text/html", index_html); });
 
-  server.on("/connect", HTTP_GET, [] (AsyncWebServerRequest *request) {
-    String input_ssid;
-    String input_password;
+  server.on("/connect", HTTP_GET, [](AsyncWebServerRequest *request)
+            {
+              String input_ssid;
+              String input_password;
 
-    if (request->hasParam(input_parameter1)) {
-      input_ssid = request->getParam(input_parameter1)->value();
-    }
+              Serial.println("chamou o connect");
 
-    if (request->hasParam(input_parameter2)) {
-      input_password = request->getParam(input_parameter2)->value();
-    }
 
-    // Tentar conectar a ESP32 à rede WiFi
-    try {
-        if (connectToWiFi(input_ssid, input_password)) {
-            String id = getUniqueID();
-            String response = String(success_html);
-            writeStringEEPROM(EEPROM_SSID, input_ssid);
-            writeStringEEPROM(EEPROM_PASS, input_password);
-            saveConnectionStatus(true);
-            response.replace("%s", id);
-            request->send(200, "text/html", response);
-        } else {
-            request->send(200, "text/html", "Falha ao conectar à rede WiFi: " + input_ssid);
-        }
-    } catch (...) {
-        request->send(200, "text/html", "Falha ao conectar à rede WiFi: ");
-    }
+              if (request->hasParam(input_parameter1))
+              {
+                input_ssid = request->getParam(input_parameter1)->value();
+              }
 
-  });
+              if (request->hasParam(input_parameter2))
+              {
+                input_password = request->getParam(input_parameter2)->value();
+              }
+
+              
+              // Tentar conectar a ESP32 à rede WiFi
+              if (connectToWiFi(input_ssid, input_password))
+              {
+
+                String id = getUniqueID();
+                String response = String(success_html);
+
+                writeStringEEPROM(EEPROM_SSID, input_ssid);
+                writeStringEEPROM(EEPROM_PASS, input_password);
+                saveConnectionStatus(true);
+                response.replace("%s", id);
+
+                request->send(200, "text/html", response);
+              }
+              else
+              {
+                Serial.print("Iaqqqaqaqqqqqqqqqqqqq abcd");
+                request->send_P(200, "text/html", fail_html);
+              }
+            });
 
   server.onNotFound(notFound);
   server.begin();

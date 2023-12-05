@@ -11,11 +11,16 @@ const int MAX_EEPROM_LEN = 50;
 
 
 void writeStringEEPROM(int add, String data) {
+  
   int _size = data.length();
   if (_size > MAX_EEPROM_LEN)
     return;
-  int i;
-  for (i = 0; i < _size; i++) {
+  
+  for (int i = 0; i < MAX_EEPROM_LEN; i++) {
+    EEPROM.write(add + i, 0); 
+  }
+
+  for (int i = 0; i < _size; i++) {
     EEPROM.write(add + i, data[i]);
   }
   EEPROM.write(add + _size, '\0');

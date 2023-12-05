@@ -26,23 +26,45 @@ void taskWiFiCode(void *pvParameters) {
 
     bool hasConnectedToWiFi = loadConnectionStatus();
     Serial.println(hasConnectedToWiFi);
-  
-    if (hasConnectedToWiFi && WiFi.status() != WL_CONNECTED ) {
+
+    Serial.println("na task wifi");
+    Serial.println(WiFi.status());
+
+    if (hasConnectedToWiFi && WiFi.status() != WL_CONNECTED && WiFi.status() != WL_NO_SSID_AVAIL) {
       // WiFi não está conectado, tente reconectar
-      setupWiFi();
-      verifyMqttConnection();
+      Serial.println("entrou aqui dentro 12345");
+          setupWiFi();
+          Serial.println("entrou aqui dentro 12345");
+        Serial.println(WiFi.status());
+
+    }else if (hasConnectedToWiFi && WiFi.status() == WL_NO_SSID_AVAIL) {
+      // WiFi não está conectado, tente reconectar
+          Serial.println("dentro do segudo if na task brekando");
+        Serial.println(WiFi.status());
+
     }
 
     if (hasConnectedToWiFi && WiFi.status() == WL_CONNECTED) {
+        Serial.println("entrou aqui dentro");
         verifyMqttConnection();
     }
-    vTaskDelay(pdMS_TO_TICKS(1000));
+    vTaskDelay(pdMS_TO_TICKS(5000));
   }
 }
 
 
 void taskSensorCode(void *pvParameters) {
   while(1) {
+
+    String ssid = readStringEEPROM(EEPROM_SSID);
+    String password = readStringEEPROM(EEPROM_PASS);
+    int connectionStatus = loadConnectionStatus();
+    Serial.print("SSID: ");
+    Serial.println(ssid);
+    Serial.print("Password: ");
+    Serial.println(password);
+    Serial.print("Status de conexão: ");
+    Serial.println(connectionStatus);
     
     bool hasConnectedToWiFi = loadConnectionStatus();
     if (hasConnectedToWiFi && WiFi.status() == WL_CONNECTED) {
@@ -65,17 +87,18 @@ void setup() {
   setupWebServer();
   setupMqtt();
   setupBomba();
-  setupSensor();
+  // setupSensor();
+  setupWiFi();
 
-  xTaskCreatePinnedToCore(
-    taskWiFiCode,
-    "TaskWiFi",
-    10000,
-    NULL,
-    1,
-    &taskWiFi,
-    0
-  );
+  // xTaskCreatePinnedToCore(
+  //   taskWiFiCode,
+  //   "TaskWiFi",
+  //   10000,
+  //   NULL,
+  //   1,
+  //   &taskWiFi,
+  //   0
+  // );
 
   xTaskCreatePinnedToCore(
     taskSensorCode,
@@ -89,4 +112,5 @@ void setup() {
 }
 
 void loop() {
+
 }

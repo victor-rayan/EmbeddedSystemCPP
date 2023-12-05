@@ -41,12 +41,12 @@ void setupSensor() {
 bool reservatorioVazio() {
   reservatorio = digitalRead(nivel);
   if (reservatorio == HIGH) {
-    digitalWrite(alerta, HIGH);
+    
     Serial.print("Nível do reservatório: vazio");
     Serial.print('\n');
     return true;
   }else{
-    digitalWrite(alerta, LOW);
+    
     Serial.print("Nível do reservatório: cheio");
     Serial.print('\n');
     return false;
@@ -56,6 +56,8 @@ bool reservatorioVazio() {
 void verifySensor() {
   
   reservatorio = reservatorioVazio();
+  Serial.print("Estado da bomba: ");
+  Serial.println(reservatorio);
   if (reservatorio == true) {
     closeBomba();
   }
