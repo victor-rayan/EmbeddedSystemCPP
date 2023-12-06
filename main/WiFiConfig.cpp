@@ -9,7 +9,7 @@
 AsyncWebServer server(80);
 SemaphoreHandle_t wifiSemaphore;
 
-const char *ap_ssid = "ESP32-AP";
+const char *ap_ssid = "Irriga-Ja";
 const char *ap_password = "password";
 
 const char *input_parameter1 = "input_ssid";
@@ -106,7 +106,7 @@ void setupWiFi()
   Serial.println("Password: ");
   Serial.println(password);
 
-  if (ssid.length() > 0 && password.length() > 0)
+  if (ssid.length() > 0 && password.length() > 0 && ssid.length() < 25 && password.length() < 25)
   {
     bool isConnectedToWiFi = connectToWiFi(ssid, password);
   }
