@@ -5,7 +5,7 @@
 
 
 extern DHT dht;
-
+extern bool reservatorio;
 
 void setupSensor();
 void verifySensor();

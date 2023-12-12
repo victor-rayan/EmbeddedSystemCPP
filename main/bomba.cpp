@@ -1,6 +1,7 @@
 #include "Arduino.h"
 #include "memoryFlash.h"
 #include "bomba.h"
+#include "sensor.h"
 
 const int ledPin = 2;
 const int bomba = 27;
@@ -12,10 +13,18 @@ void setupBomba() {
 }
 
 void openBomba(){
-  Serial.println("Estado da bomba: LIGADA");
-  digitalWrite(ledPin, HIGH);
-  digitalWrite(bomba, HIGH);
-  saveBombaStatus(true);
+  if (reservatorio == HIGH) {
+    Serial.print("Nível do reservatório: vazio bloqueando abertura");
+    Serial.print(reservatorio);
+  }else{
+    Serial.print("Nível do reservatório: cheio permitindo abertura");
+    Serial.print('\n');
+    Serial.println("Estado da bomba: LIGADA");
+    digitalWrite(ledPin, HIGH);
+    digitalWrite(bomba, HIGH);
+    saveBombaStatus(true);
+  }
+  
 }
 
 void closeBomba(){
