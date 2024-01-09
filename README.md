@@ -1,29 +1,29 @@
-# Projeto IrrigaJá - Controle de Irrigação Automatizado
+# Project IrrigaJá - Automated Irrigation Control
 
-Este projeto visa criar um sistema de controle de irrigação automatizado que utiliza a ESP32 e integra sensores para monitorar condições meteorológicas e do solo. Além disso, o projeto inclui um servidor web para configuração e controle remoto.
+This project aims to create an automated irrigation control system utilizing ESP32 and integrating sensors to monitor weather and soil conditions. Additionally, the project includes a web server for configuration and remote control.
 
-## Funcionalidades Principais
+## Key Features
 
-- Monitoramento de velocidade do vento, umidade do ar, umidade do solo e temperatura.
-- Controle automático da bomba de água com base nas condições do solo e configurações do usuário.
-- Configuração remota por meio de uma interface web acessível a partir de qualquer dispositivo conectado à mesma rede WiFi.
+- Monitoring wind speed, air humidity, soil moisture, and temperature.
+- Automatic water pump control based on soil conditions and user settings.
+- Remote configuration through a web interface accessible from any device connected to the same WiFi network.
 
-## Estrutura do Projeto
+## Project Structure
 
-O código está organizado em módulos para facilitar a manutenção e expansão do sistema. Abaixo estão os principais módulos do projeto:
+The code is organized into modules for ease of maintenance and system expansion. Below are the main modules of the project:
 
-- **WiFiConfig**: Gerencia a configuração e conexão à rede WiFi.
-- **MqttConfig**: Implementa a comunicação MQTT para integração com o servidor e troca de mensagens.
-- **MemoryFlash**: Lida com o armazenamento e recuperação de configurações em memória flash.
-- **Sensores**: Contém classes para os diversos sensores utilizados.
-- **Atuadores**: Contém classes para os atuadores, como a bomba de água.
-- **Sistema**: Orquestra a interação entre os diferentes módulos.
+- **WiFiConfig**: Manages WiFi network configuration and connection.
+- **MqttConfig**: Implements MQTT communication for server integration and message exchange.
+- **MemoryFlash**: Handles storage and retrieval of settings in flash memory.
+- **Sensors**: Contains classes for various used sensors.
+- **Actuators**: Contains classes for actuators like the water pump.
+- **System**: Orchestrates interaction between different modules.
 
-## Configuração do Ambiente de Desenvolvimento
+## Development Environment Setup
 
-Certifique-se de ter o ambiente de desenvolvimento Arduino IDE configurado corretamente. As bibliotecas necessárias podem ser instaladas via Gerenciador de Bibliotecas Arduino.
+Ensure your Arduino IDE development environment is correctly set up. Required libraries can be installed via the Arduino Library Manager.
 
-### Dependências
+### Dependencies
 
 - [ESPAsyncWebServer](https://github.com/me-no-dev/ESPAsyncWebServer)
 - [PubSubClient](https://pubsubclient.knolleary.net/)
